@@ -1,49 +1,129 @@
 <!DOCTYPE html>
-<html>
-  <body>
-    <center><h1>Hello , Welcome to my chat site ! {{request.user}}</h1></center>
-    <br>
-    {% if request.user.is_authenticated  %}
-    <center> Logout the chat Page <a href = "{% url 'logout-user' %}">Logout</a></center>
-    {% endif %}
-    <div
-      class="chat__item__container"
-      id="id_chat_item_container"
-      style="font-size: 20px"
-    >
-      <br />
-      <input type="text" id="id_message_send_input" />
-      <button type="submit" id="id_message_send_button">Send Message</button>
-      <br />
-      <br />
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Page</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f0f0f0;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+    .container {
+      background-color: #ffffff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      width: 80%;
+      max-width: 600px;
+      text-align: center;
+    }
+    h1 {
+      color: #333333;
+    }
+    .chat__item__container {
+      background-color: #f9f9f9;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 20px;
+      height: 300px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+    }
+    .chat__item__container div {
+      margin: 5px 0;
+      padding: 10px;
+      background-color: #e0e0e0;
+      border-radius: 5px;
+      text-align: left;
+    }
+    .input-container {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    input[type="text"] {
+      width: 75%;
+      padding: 10px;
+      font-size: 16px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+    }
+    button {
+      width: 20%;
+      padding: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      background-color: #007BFF;
+      color: white;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    .logout {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Hello, Welcome to my chat site! {{ request.user }}</h1>
+    {% if request.user.is_authenticated %}
+    <div class="logout">
+      <a href="{% url 'logout-user' %}">Logout</a>
     </div>
-    <script>
-      const chatSocket = new WebSocket("ws://" + window.location.host + "/");
-      chatSocket.onopen = function (e) {
-        console.log("The connection was setup successfully !");
-      };
-      chatSocket.onclose = function (e) {
-        console.log("Something unexpected happened !");
-      };
-      document.querySelector("#id_message_send_input").focus();
-      document.querySelector("#id_message_send_input").onkeyup = function (e) {
-        if (e.keyCode == 13) {
-          document.querySelector("#id_message_send_button").click();
-        }
-      };
-      document.querySelector("#id_message_send_button").onclick = function (e) {
-        var messageInput = document.querySelector(
-          "#id_message_send_input"
-        ).value;
-        chatSocket.send(JSON.stringify({ message: messageInput, username : "{{request.user.username}}"}));
-      };
-      chatSocket.onmessage = function (e) {
-        const data = JSON.parse(e.data);
-        var div = document.createElement("div");
-        div.innerHTML = data.username + " : " + data.message;
-        document.querySelector("#id_message_send_input").value = "";
-        document.querySelector("#id_chat_item_container").appendChild(div);
-      };
-    </script>
-  </body>
+    {% endif %}
+    <div class="chat__item__container" id="id_chat_item_container">
+      <!-- Chat messages will appear here -->
+    </div>
+    <div class="input-container">
+      <input type="text" id="id_message_send_input" placeholder="Type your message..." />
+      <button type="submit" id="id_message_send_button">Send</button>
+    </div>
+  </div>
+
+  <script>
+    const chatSocket = new WebSocket("ws://" + window.location.host + "/");
+
+    chatSocket.onopen = function (e) {
+      console.log("The connection was set up successfully!");
+    };
+
+    chatSocket.onclose = function (e) {
+      console.log("Something unexpected happened!");
+    };
+
+    document.querySelector("#id_message_send_input").focus();
+
+    document.querySelector("#id_message_send_input").onkeyup = function (e) {
+      if (e.keyCode === 13) {
+        document.querySelector("#id_message_send_button").click();
+      }
+    };
+
+    document.querySelector("#id_message_send_button").onclick = function (e) {
+      var messageInput = document.querySelector("#id_message_send_input").value;
+      chatSocket.send(JSON.stringify({ message: messageInput, username: "{{ request.user.username }}" }));
+    };
+
+    chatSocket.onmessage = function (e) {
+      const data = JSON.parse(e.data);
+      var div = document.createElement("div");
+      div.innerHTML = `<strong>${data.username}</strong>: ${data.message}`;
+      document.querySelector("#id_message_send_input").value = "";
+      document.querySelector("#id_chat_item_container").appendChild(div);
+    };
+  </script>
+</body>
 </html>
